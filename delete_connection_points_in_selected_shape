@@ -24,27 +24,45 @@ Sub delete_connection_points_in_selected_shape()
     
     If MsgBox("Delete all Connection Points in this Shape?", 4, "Delete in this Shape?") = vbYes Then
     
+        Dim UndoScopeID1 As Long
+        UndoScopeID1 = Application.BeginUndoScope("Clear")
+    
         If selShape.SectionExists(visSectionConnectionPts, False) = True Then
+        
             For i = 0 To selShape.Section(visSectionConnectionPts).Count
+            
                 selShape.DeleteRow visSectionConnectionPts, 0
+                
             Next
+            
         End If
+        
+        Application.EndUndoScope UndoScopeID1, True
     
     End If
     
     If MsgBox("Delete all Connection Points in Subshapes?", 4, "Delete in Subshapes?") = vbYes Then
     
+        Dim UndoScopeID2 As Long
+        UndoScopeID2 = Application.BeginUndoScope("Clear")
+        
         For Each subShape In colShpResult
+        
             If subShape.SectionExists(visSectionConnectionPts, False) = True Then
+            
                 For i = 0 To subShape.Section(visSectionConnectionPts).Count
+                
                     subShape.DeleteRow visSectionConnectionPts, 0
+                    
                 Next
+                
             End If
+            
         Next subShape
+        
+        Application.EndUndoScope UndoScopeID2, True
     
     End If
-    
-    Application.EndUndoScope UndoScopeID1, True
 
     'Restore diagram services
     ActiveDocument.DiagramServicesEnabled = DiagramServices
