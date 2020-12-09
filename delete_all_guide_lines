@@ -11,6 +11,9 @@ Sub delete_all_guide_lines()
 
     ActiveWindow.DeselectAll
     
+    Dim UndoScopeID1 As Long
+    UndoScopeID1 = Application.BeginUndoScope("Clear")
+    
     Dim vsoSelection1 As Visio.Selection
     Set vsoSelection1 = Application.ActiveWindow.Master.CreateSelection(visSelTypeByType, visSelModeSkipSuper, visTypeSelGuide)
     
@@ -18,6 +21,8 @@ Sub delete_all_guide_lines()
     
     Application.ActiveWindow.Selection.DeleteEx (visDeleteNormal)
 
+    Application.EndUndoScope UndoScopeID1, True
+        
     ActiveWindow.DeselectAll
     
     'Restore diagram services
