@@ -1,0 +1,26 @@
+Sub delete_all_guide_lines()
+'
+' Delete *all* guide lines in the active window.
+'
+'
+
+    'Enable diagram services
+    Dim DiagramServices As Integer
+    DiagramServices = ActiveDocument.DiagramServicesEnabled
+    ActiveDocument.DiagramServicesEnabled = visServiceVersion140 + visServiceVersion150
+
+    ActiveWindow.DeselectAll
+    
+    Dim vsoSelection1 As Visio.Selection
+    Set vsoSelection1 = Application.ActiveWindow.Master.CreateSelection(visSelTypeByType, visSelModeSkipSuper, visTypeSelGuide)
+    
+    Application.ActiveWindow.Selection = vsoSelection1
+    
+    Application.ActiveWindow.Selection.DeleteEx (visDeleteNormal)
+
+    ActiveWindow.DeselectAll
+    
+    'Restore diagram services
+    ActiveDocument.DiagramServicesEnabled = DiagramServices
+    
+End Sub
