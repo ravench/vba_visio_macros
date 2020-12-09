@@ -4,10 +4,12 @@ Sub delete_connection_points_in_selected_shape()
 ' Delete *all* connection points in the currently selected Shape and it's subshapes.
 '
 ' based on http://visguy.com/vgforum/index.php?topic=3955.0
+' and https://books.google.de/books?id=rDlrCwAAQBAJ&pg=PA340
 '
     
-    Dim shp As Visio.Shape
+    Dim selShape As Visio.Shape
     Dim colShpResult As Collection
+    Dim i As Integer
     
     Set colShpResult = New Collection
     
@@ -16,15 +18,31 @@ Sub delete_connection_points_in_selected_shape()
     DiagramServices = ActiveDocument.DiagramServicesEnabled
     ActiveDocument.DiagramServicesEnabled = visServiceVersion140 + visServiceVersion150
     
-    Set shp = ActiveWindow.Selection.PrimaryItem
+    Set selShape = ActiveWindow.Selection.PrimaryItem
     
-    Call GetShapesInShape(shp, iRecursionDepth - 1, colShpResult)
+    Call GetShapesInShape(selShape, iRecursionDepth - 1, colShpResult)
     
-    For Each Shape In colShpResult
+    If MsgBox("Delete all Connection Points in this Shape?", 4, "Delete in this Shape?") = vbYes Then
     
-        Shape.DeleteRow visSectionConnectionPts, 0
+        If selShape.SectionExists(visSectionConnectionPts, False) = True Then
+            For i = 0 To selShape.Section(visSectionConnectionPts).Count
+                selShape.DeleteRow visSectionConnectionPts, 0
+            Next
+        End If
     
-    Next Shape
+    End If
+    
+    If MsgBox("Delete all Connection Points in Subshapes?", 4, "Delete in Subshapes?") = vbYes Then
+    
+        For Each subShape In colShpResult
+            If subShape.SectionExists(visSectionConnectionPts, False) = True Then
+                For i = 0 To subShape.Section(visSectionConnectionPts).Count
+                    subShape.DeleteRow visSectionConnectionPts, 0
+                Next
+            End If
+        Next subShape
+    
+    End If
     
     Application.EndUndoScope UndoScopeID1, True
 
@@ -77,3 +95,4 @@ PROCEDURE_END:
     Set GetShapesInShape = colShpResult
     
 End Function
+
