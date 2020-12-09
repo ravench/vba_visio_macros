@@ -1,0 +1,79 @@
+Sub delete_connection_points_in_selected_shape()
+
+'
+' Delete *all* connection points in the currently selected Shape and it's subshapes.
+'
+' based on http://visguy.com/vgforum/index.php?topic=3955.0
+'
+    
+    Dim shp As Visio.Shape
+    Dim colShpResult As Collection
+    
+    Set colShpResult = New Collection
+    
+    'Enable diagram services
+    Dim DiagramServices As Integer
+    DiagramServices = ActiveDocument.DiagramServicesEnabled
+    ActiveDocument.DiagramServicesEnabled = visServiceVersion140 + visServiceVersion150
+    
+    Set shp = ActiveWindow.Selection.PrimaryItem
+    
+    Call GetShapesInShape(shp, iRecursionDepth - 1, colShpResult)
+    
+    For Each Shape In colShpResult
+    
+        Shape.DeleteRow visSectionConnectionPts, 0
+    
+    Next Shape
+    
+    Application.EndUndoScope UndoScopeID1, True
+
+    'Restore diagram services
+    ActiveDocument.DiagramServicesEnabled = DiagramServices
+
+End Sub
+
+Public Function GetShapesInShape(shp As Visio.Shape, _
+                                    Optional iRecursionDepth As Integer = -1, _
+                                    Optional colShpResult As Collection = Nothing _
+                                    ) As Collection
+' Abstract: Get sub-shapes of a shape using depth-first traversal.
+' Parameters:
+'   * shp: the shape which need to be processed.
+'   * iRecursionDepth: the max depth of sub-shapes to return.
+'                      0 means count only top level shapes; sub-shapes are ignored.
+'                      -1 means count top level shapes and all sub-shapes.
+'   * colShpResult: is only used internally by this procedure.
+' Immediate: Call PrintVisioObjects(GetShapesInShape(ActiveWindow.Selection(1)))
+' ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    '// initialize colShpResult if this has not been done already
+    If colShpResult Is Nothing Then
+        Set colShpResult = New Collection
+    End If
+    
+    '// do few checks first
+    If shp Is Nothing Then GoTo PROCEDURE_END
+    
+    '// iterate through sub-shapes of shp
+    Dim shpSub As Visio.Shape
+    For Each shpSub In shp.Shapes
+        
+        '// add shpSub to our result
+        Call colShpResult.Add(shpSub)
+        
+        '// check there are children for shpSub and recursion should continue
+        If shpSub.Shapes.Count > 0 And iRecursionDepth <> 0 Then
+            
+            '// go recursively to get sub-shapes of shpSub
+            Call GetShapesInShape(shpSub, iRecursionDepth - 1, colShpResult)
+            
+        End If
+        
+    Next shpSub
+    
+PROCEDURE_END:
+    
+    '// return whatever been collected
+    Set GetShapesInShape = colShpResult
+    
+End Function
